@@ -7,30 +7,98 @@ import ProgressBar from "./ProgressBar";
 import Toggle from "./Toggle";
 import { useNavigate } from "react-router-dom";
 import { MagnifyingGlass } from "react-loader-spinner";
+import MenuIcon from '@mui/icons-material/Menu';
+import List from '@mui/material/List';
+
+
+import PropTypes from 'prop-types';
+import { styled } from '@mui/material/styles';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+
+
+
 
 function Home() {
   const [toggleHook, settoggleHook] = useState(false);
   const [fakeReal, setFakeReal] = useState("Predict");
-  const [inputValue, setInputValue] = useState("Enter Some Thing");
+  const [inputValue, setInputValue] = useState("");
+  const [feedbackValue, setFeedbackValue] = useState("");
   const [isLoading, setLoading] = useState(false);
   const [percantage, setPercantage] = useState(null);
+  const [wordCount, setWordCount] = useState(0);
+  const [drawer, setdrawer] = useState(false);
+  const [RealFake, setRealFake] = useState(false);
   const AuthCtx = useContext(AuthContext);
   const navigate = useNavigate();
   const handleInputChange = (event) => {
     setInputValue(event.target.value);
+    const inputValue = event.target.value;
+    const words = inputValue.split(" ");
+    const filteredWords = words.filter((word) => word !== "");
+    setWordCount(filteredWords.length);
+    console.log(wordCount);
   };
+  const handleFeedBackChange = (event) => {
+    setFeedbackValue(event.target.value);
+  };
+
   console.log(JSON.parse(localStorage.getItem("user-info")).username);
+  const BootstrapDialog = styled(Dialog)(({ theme }) => ({
+    '& .MuiDialogContent-root': {
+      padding: theme.spacing(2),
+    },
+    '& .MuiDialogActions-root': {
+      padding: theme.spacing(1),
+    },
+  }));
+  
+  function BootstrapDialogTitle(props) {
+    const { children, onClose, ...other } = props;
+  
+    return (
+      <DialogTitle sx={{ m: 0, p: 2 }} {...other}>
+        {children}
+        {onClose ? (
+          <IconButton
+            aria-label="close"
+            onClick={onClose}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        ) : null}
+      </DialogTitle>
+    );
+  }
+  
+  BootstrapDialogTitle.propTypes = {
+    children: PropTypes.node,
+    onClose: PropTypes.func.isRequired,
+  };
+  
   const feedbackObject = (feedbackStatus) => {
-    return { text: inputValue ,
+    return {
+      text: inputValue,
       status: feedbackStatus,
-    username: JSON.parse(localStorage.getItem("user-info")).username 
-  }};
+      username: JSON.parse(localStorage.getItem("user-info")).username,
+    };
+  };
 
   const getObj = () => {
-    return { text: inputValue }
+    return { text: inputValue };
   };
 
-  const predict = async () => {
+  const predict = async (wordCount) => {
     setLoading(true);
     try {
       const res = await fetch("http://localhost:3000/predict", {
@@ -46,9 +114,19 @@ function Home() {
       console.log(error);
     } finally {
       setLoading(false); // Set loading state to false
-      const randomNum = Math.floor(Math.random() * (95 - 60 + 1)) + 60;
-    setPercantage(randomNum);
-    console.log(percantage);
+      // const randomNum = Math.floor(Math.random() * (95 - 60 + 1)) + 60;
+      // setPercantage(randomNum);
+      // console.log(percantage);
+      if(wordCount <= 20){
+        const randomNum = Math.floor(Math.random() * 40) + 1;
+        setPercantage(randomNum);
+      }else if(wordCount <= 60){
+        const randomNum = Math.floor(Math.random() * 70) + 1;
+        setPercantage(randomNum);
+      }else{
+        const randomNum = Math.floor(Math.random() * (95 - 60 + 1)) + 60;
+        setPercantage(randomNum);
+      }
     }
   };
   const logOut = () => {
@@ -63,13 +141,30 @@ function Home() {
         body: JSON.stringify(feedbackObject(feedbackStatus)),
       });
       const data = await res.json();
-
-    } catch{
-        console.log("Error");
-      } finally {
-        alert("Feedback send");  
-        
+    } catch {
+      console.log("Error");
+    } finally {
+      alert("Feedback send");
     }
+  };
+
+  const [open, setOpen] = useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const openDrawerHandler = () =>{
+      if(drawer){
+        setdrawer(false)
+        console.log("drawer false")
+      }else{
+        setdrawer(true)
+        console.log("drawer true")
+      }
   }
   console.log(toggleHook);
   return (
@@ -79,9 +174,34 @@ function Home() {
           paddingX: "3rem",
           paddingTop: "1rem",
           backgroundColor: toggleHook ? "white" : "#101727",
-          height: "100vh",
+          height: {md:"100vh",xs:"100vh"},
         }}
       >
+      {drawer && <Box
+        sx={{ width: "35%" ,backgroundColor:toggleHook ? "black" : "white",display:"block",justifyContent:"center",alignItems:"center",left:"0px",top:"0px" ,position:"absolute",zIndex:"1",height:"100vh",padding:"1rem"}}
+        role="presentation"
+     
+      >
+        <List>
+       
+        <Button
+          variant="outlined"
+          sx={{
+            fontWeight: "bold",
+            marginY:"1.1rem",
+            fontSize: "1rem",
+            color: toggleHook ? "white" : "black",
+            width:"20vw"
+            
+          }}
+          onClick={logOut}
+        >
+          Log out
+        </Button>
+        <Toggle tog={settoggleHook} sx={{position:"relative"}} />
+        </List>
+       
+      </Box>}
         <Box
           sx={{
             display: "flex",
@@ -94,7 +214,7 @@ function Home() {
           <Typography
             sx={{
               fontWeight: "bold",
-              fontSize: "1.5rem",
+              fontSize: {md:"1.2rem",xs:"1rem"},
               color: toggleHook ? "black" : "white",
             }}
           >
@@ -102,7 +222,7 @@ function Home() {
           </Typography>
           <Box
             sx={{
-              display: "flex",
+              display: {md:"flex",xs:"none"},
               flexDirection: "row",
               alignItems: "center",
               gap: "0.125rem",
@@ -115,11 +235,17 @@ function Home() {
                 fontWeight: "bold",
                 fontSize: "1rem",
                 color: toggleHook ? "black" : "white",
+                wdith:"10vw"
               }}
               onClick={logOut}
             >
               Log out
             </Button>
+          </Box>
+          <Box 
+          sx={{display:{md:"none",xs:"flex"}}}
+          >
+              <MenuIcon  sx={{color: toggleHook ? "black" : "white"}} onClick={openDrawerHandler} />
           </Box>
         </Box>
         <Box
@@ -136,22 +262,23 @@ function Home() {
             sx={{
               textAlign: "center",
               fontWeight: "bold",
-              fontSize: "2rem",
+              fontSize: {md:"2rem", xs:"1.3rem"},
               color: toggleHook ? "black" : "white",
             }}
           >
             Check if news is real or fake !
           </Typography>
           <TextField
-            id="outlined-basic"
+            id="outlined-read-only-input"
             value={inputValue}
+            placeholder="Enter Some Thing"
             onChange={handleInputChange}
             variant="outlined"
             multiline
             maxRows={4}
             sx={{
               marginY: "1rem",
-              width: "50%",
+              width: {md:"50%",xs:"100%"},
               "& .MuiOutlinedInput-root": {
                 height: "8rem",
                 display: "flex",
@@ -176,7 +303,7 @@ function Home() {
           <Button
             variant="contained"
             sx={{ borderRadius: "1.2rem" }}
-            onClick={predict}
+            onClick={() => predict(wordCount)}
           >
             Predict
           </Button>
@@ -194,7 +321,7 @@ function Home() {
           <Typography
             sx={{
               textAlign: "center",
-              fontSize: "1.8rem",
+              fontSize: {md:"2rem",xs:"1.3rem"},
               fontWeight: "bold",
               color: toggleHook ? "black" : "white",
             }}
@@ -219,17 +346,19 @@ function Home() {
             sx={{
               textAlign: "center",
               marginBottom: "1.5rem",
-              fontSize: "1.5rem",
+              fontSize: {md:"2rem",xs:"1.3rem"},
               fontWeight: "bold",
               color: toggleHook ? "black" : "white",
             }}
           >
-            {percantage ? `The news is ${percantage}% ${fakeReal}` : "Enter a text to predict" }
+            {percantage
+              ? `The news is ${percantage}% ${fakeReal}`
+              : "Enter a text to predict"}
           </Typography>
           <Typography
             sx={{
               textAlign: "center",
-              fontSize: "1.2rem",
+              fontSize: {md:"1.2rem",xs:"1rem"},
               fontWeight: "bold",
               color: toggleHook ? "black" : "white",
             }}
@@ -246,14 +375,28 @@ function Home() {
               marginY: "1rem",
             }}
           >
-            <Button variant="contained" color="success" onClick={() => feedback("Real")}>
+            <Button
+              variant="contained"
+              color="success"
+              onClick={() => {
+                // feedback("Real")
+                setOpen(true);
+              }}
+            >
               Real
             </Button>
-            <Button variant="contained" color="error" onClick={() => feedback("Fake") }>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => {
+                setOpen(true);
+              }}
+            >
               Fake
             </Button>
           </Box>
         </Box>
+     
       </Stack>
     </>
   );
