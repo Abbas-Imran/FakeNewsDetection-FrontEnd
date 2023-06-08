@@ -18,8 +18,13 @@ const Login = () => {
   const [error, setError] = useState("");
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
+  const [policy, setPolicy] = useState(false);
 
   const onSubmitHandler = async (event) => {
+    if (!policy) {
+      notify();
+      return false;
+    }
     event.preventDefault();
 
     const getObj = () => {
@@ -45,7 +50,7 @@ const Login = () => {
     if (msg) {
       setError(msg);
       console.log("msg", msg);
-      notify();
+      notify("error");
     }
 
     if (token !== undefined && token) {
@@ -53,7 +58,7 @@ const Login = () => {
       const user = await jwtDecode(token);
       console.log(error);
       AuthCtx.getUser(user);
-
+      notify("success");
       navigate("/Home");
     }
   };
@@ -61,13 +66,40 @@ const Login = () => {
     navigate("/Signup");
   };
 
-  const notify = () => toast("Invalid Email or Password");
+  const notify = (status) => {
+    if(status === "error") {
+    toast.error('Invalid Email or Password!', {
+    position: "bottom-right",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "dark",
+    });} else {
+      toast.error('Please agree policy to continue', {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+        });
+    }
+  
+  }
 
   const onChangeUserName = (e) => {
     setUserName(e.target.value);
   };
   const onChangePassword = (e) => {
     setPassword(e.target.value);
+  };
+  const onChangePolicy = (e) => {
+    setPolicy(e.target.checked);
   };
 
   return (
@@ -83,7 +115,6 @@ pauseOnFocusLoss
 draggable
 pauseOnHover
 theme="dark"
-style={{left:"90%",top:"90%",zIndex:"1"}}
 />
     <Stack
       sx={{
@@ -171,7 +202,7 @@ style={{left:"90%",top:"90%",zIndex:"1"}}
               marginTop: "1rem",
             }}
           >
-            <Checkbox sx={{ padding: "0px" }} required />
+            <Checkbox sx={{ padding: "0px" }} required  onChange={onChangePolicy}/>
             <Typography
               sx={{
                 fontWeight: "600",
@@ -203,7 +234,7 @@ style={{left:"90%",top:"90%",zIndex:"1"}}
           // className="gradient"
           sx={{
             width: "100%",
-            height: "100%",
+            height: {sx:"50%", md:"100%"},
             backgroundColor: "#101727",
             borderRadius: "2rem",
 
@@ -220,8 +251,10 @@ style={{left:"90%",top:"90%",zIndex:"1"}}
             }}
           >
             <Typography
-              variant="h4"
-              sx={{ fontWeight: "600", color: "white", textAlign: "center" }}
+              sx={{ fontWeight: "600", color: "white", textAlign: "center",  fontSize: {
+                sx: "1rem",
+                md: "3rem"
+              }}}
             >
               CREATE YOUR ACCOUNT
             </Typography>
@@ -246,4 +279,9 @@ style={{left:"90%",top:"90%",zIndex:"1"}}
           </Box>
         </Grid>
       </Grid>
-    
+    </Stack>
+    </>
+  );
+};
+
+export default Login;

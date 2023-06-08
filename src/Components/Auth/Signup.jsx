@@ -12,20 +12,27 @@ import {
   Typography,
 } from "@mui/material";
 import { AccountCircle } from "@mui/icons-material";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Signup = () => {
   const [error, setError] = useState("");
+  const [policy, setPolicy] = useState(false);
 
   const AuthCtx = useContext(AuthContext);
   const navigate = useNavigate();
 
   const signupReducer = (state, action) => {
-    return {
-      ...state,
-      [action.name]: action.value,
-    };
+    switch (action.type) {
+      case "input":
+        return {
+          ...state,
+          [action.name]: action.value,
+        };
+      default:
+        return state;
+    }
   };
-
   const [inputState, dispatch] = useReducer(signupReducer, {
     name: "",
     username: "",
@@ -40,12 +47,42 @@ const Signup = () => {
     });
   };
   
+  const notify = (status) => {
+    if(status === "error") {
+    toast.error('UserName Already Exists', {
+    position: "bottom-right",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "dark",
+    });} else {
+      toast.error('Please agree policy to continue', {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+        });
+    }
+  
+  }
+
   const navigateToLogin = () => {
     navigate("/login");
   }
 
   const onSubmitHandler = (event) => {
     event.preventDefault();
+    if (!policy) {
+      notify();
+      return false;
+    }
 
     console.log(inputState);
 
@@ -60,7 +97,8 @@ const Signup = () => {
       const data = await rawResponse.json();
       console.log(data);
       if (data.msg) {
-        setError(data.msg);
+        notify("error");
+        return 0;
       }
 
       if (data.token) {
@@ -70,10 +108,24 @@ const Signup = () => {
     };
     postUser();
   };
-
-  setTimeout(() => setError(null), [7000]);
+  const onChangePolicy = (e) => {
+    setPolicy(e.target.checked);
+  };
 
   return (
+    <>
+     <ToastContainer
+position="bottom-right"
+autoClose={5000}
+hideProgressBar={false}
+newestOnTop={false}
+closeOnClick
+rtl={false}
+pauseOnFocusLoss
+draggable
+pauseOnHover
+theme="dark"
+/>
     <Stack
       sx={{
         height: "100vh",
@@ -130,7 +182,8 @@ const Signup = () => {
               sx={{ color: "#101727", width: "55%" }}
               variant="standard"
               placeholder="Username"
-              // onChange={onChangeEmail}
+              onChange={onChangeHandler}
+                name="username"
             />
           </Box>
           <Box
@@ -147,7 +200,8 @@ const Signup = () => {
               sx={{ color: "#101727", width: "55%" }}
               variant="standard"
               placeholder="Name"
-              // onChange={onChangeEmail}
+              onChange={onChangeHandler}
+                name="name"
             />
           </Box>
           <Box
@@ -163,7 +217,8 @@ const Signup = () => {
             <TextField
               variant="standard"
               placeholder="password"
-              // onChange={onChangePassword}
+              onChange={onChangeHandler}
+                name="password"
               sx={{ width: "55%" }}
             />
           </Box>
@@ -176,7 +231,7 @@ const Signup = () => {
               marginTop: "1rem",
             }}
           >
-            <Checkbox sx={{ padding: "0px" }} />
+            <Checkbox sx={{ padding: "0px" }} required onChange={onChangePolicy} />
             <Typography
               sx={{
                 fontWeight: "600",
@@ -208,7 +263,7 @@ const Signup = () => {
           // className="gradient"
           sx={{
             width: "100%",
-            height: "100%",
+            height: {sx:"50%", md:"100%"},
             backgroundColor: "#101727",
             borderRadius: "2rem",
 
@@ -226,7 +281,10 @@ const Signup = () => {
           >
             <Typography
               variant="h4"
-              sx={{ fontWeight: "600", color: "white", textAlign: "center" }}
+              sx={{ fontWeight: "600", color: "white", textAlign: "center",  fontSize: {
+                sx: "1rem",
+                md: "3rem"
+              }}}
             >
               ALREADY HAVE AN ACCOUNT ?
             </Typography>
@@ -250,6 +308,7 @@ const Signup = () => {
         </Grid>
       </Grid>
     </Stack>
+    </>
   );
 };
 

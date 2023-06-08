@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { Stack, Box, Typography } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import { AuthContext } from "./store/auth-context";
@@ -7,21 +7,19 @@ import ProgressBar from "./ProgressBar";
 import Toggle from "./Toggle";
 import { useNavigate } from "react-router-dom";
 import { MagnifyingGlass } from "react-loader-spinner";
-import MenuIcon from '@mui/icons-material/Menu';
-import List from '@mui/material/List';
+import MenuIcon from "@mui/icons-material/Menu";
+import List from "@mui/material/List";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-
-import PropTypes from 'prop-types';
-import { styled } from '@mui/material/styles';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import IconButton from '@mui/material/IconButton';
-import CloseIcon from '@mui/icons-material/Close';
-
-
-
+import PropTypes from "prop-types";
+import { styled } from "@mui/material/styles";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
 
 function Home() {
   const [toggleHook, settoggleHook] = useState(false);
@@ -32,7 +30,6 @@ function Home() {
   const [percantage, setPercantage] = useState(null);
   const [wordCount, setWordCount] = useState(0);
   const [drawer, setdrawer] = useState(false);
-  const [RealFake, setRealFake] = useState(false);
   const AuthCtx = useContext(AuthContext);
   const navigate = useNavigate();
   const handleInputChange = (event) => {
@@ -43,49 +40,21 @@ function Home() {
     setWordCount(filteredWords.length);
     console.log(wordCount);
   };
+
   const handleFeedBackChange = (event) => {
     setFeedbackValue(event.target.value);
   };
 
   console.log(JSON.parse(localStorage.getItem("user-info")).username);
   const BootstrapDialog = styled(Dialog)(({ theme }) => ({
-    '& .MuiDialogContent-root': {
+    "& .MuiDialogContent-root": {
       padding: theme.spacing(2),
     },
-    '& .MuiDialogActions-root': {
+    "& .MuiDialogActions-root": {
       padding: theme.spacing(1),
     },
   }));
-  
-  function BootstrapDialogTitle(props) {
-    const { children, onClose, ...other } = props;
-  
-    return (
-      <DialogTitle sx={{ m: 0, p: 2 }} {...other}>
-        {children}
-        {onClose ? (
-          <IconButton
-            aria-label="close"
-            onClick={onClose}
-            sx={{
-              position: 'absolute',
-              right: 8,
-              top: 8,
-              color: (theme) => theme.palette.grey[500],
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-        ) : null}
-      </DialogTitle>
-    );
-  }
-  
-  BootstrapDialogTitle.propTypes = {
-    children: PropTypes.node,
-    onClose: PropTypes.func.isRequired,
-  };
-  
+
   const feedbackObject = (feedbackStatus) => {
     return {
       text: inputValue,
@@ -117,13 +86,13 @@ function Home() {
       // const randomNum = Math.floor(Math.random() * (95 - 60 + 1)) + 60;
       // setPercantage(randomNum);
       // console.log(percantage);
-      if(wordCount <= 20){
+      if (wordCount <= 20) {
         const randomNum = Math.floor(Math.random() * 40) + 1;
         setPercantage(randomNum);
-      }else if(wordCount <= 60){
+      } else if (wordCount <= 60) {
         const randomNum = Math.floor(Math.random() * 70) + 1;
         setPercantage(randomNum);
-      }else{
+      } else {
         const randomNum = Math.floor(Math.random() * (95 - 60 + 1)) + 60;
         setPercantage(randomNum);
       }
@@ -133,6 +102,34 @@ function Home() {
     AuthCtx.logout();
     navigate("/Login");
   };
+
+  const notify = (status) => {
+    if(status === "error") {
+    toast.error('Invalid Email or Password!', {
+    position: "bottom-right",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "dark",
+    });} else {
+      toast.success('🦄 Wow so easy!', {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+        });
+    }
+  
+  }
+
+    
   const feedback = async (feedbackStatus) => {
     try {
       const res = await fetch("http://localhost:3000/feedback", {
@@ -144,64 +141,77 @@ function Home() {
     } catch {
       console.log("Error");
     } finally {
-      alert("Feedback send");
+      notify("success");
     }
   };
 
-  const [open, setOpen] = useState(false);
-
-  const handleClickOpen = () => {
-    setOpen(true);
+  const openDrawerHandler = () => {
+    if (drawer) {
+      setdrawer(false);
+      console.log("drawer false");
+    } else {
+      setdrawer(true);
+      console.log("drawer true");
+    }
   };
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  const openDrawerHandler = () =>{
-      if(drawer){
-        setdrawer(false)
-        console.log("drawer false")
-      }else{
-        setdrawer(true)
-        console.log("drawer true")
-      }
-  }
   console.log(toggleHook);
   return (
     <>
+      <ToastContainer
+        position="bottom-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
       <Stack
         sx={{
           paddingX: "3rem",
           paddingTop: "1rem",
           backgroundColor: toggleHook ? "white" : "#101727",
-          height: {md:"100vh",xs:"100vh"},
+          height: { md: "100vh", xs: "100vh" },
         }}
       >
-      {drawer && <Box
-        sx={{ width: "35%" ,backgroundColor:toggleHook ? "black" : "white",display:"block",justifyContent:"center",alignItems:"center",left:"0px",top:"0px" ,position:"absolute",zIndex:"1",height:"100vh",padding:"1rem"}}
-        role="presentation"
-     
-      >
-        <List>
-       
-        <Button
-          variant="outlined"
-          sx={{
-            fontWeight: "bold",
-            marginY:"1.1rem",
-            fontSize: "1rem",
-            color: toggleHook ? "white" : "black",
-            width:"20vw"
-            
-          }}
-          onClick={logOut}
-        >
-          Log out
-        </Button>
-        <Toggle tog={settoggleHook} sx={{position:"relative"}} />
-        </List>
-       
-      </Box>}
+        {drawer && (
+          <Box
+            sx={{
+              width: "35%",
+              backgroundColor: toggleHook ? "black" : "white",
+              display: "block",
+              justifyContent: "center",
+              alignItems: "center",
+              left: "0px",
+              top: "0px",
+              position: "absolute",
+              zIndex: "1",
+              height: "100vh",
+              padding: "1rem",
+            }}
+            role="presentation"
+          >
+            <List>
+              <Button
+                variant="outlined"
+                sx={{
+                  fontWeight: "bold",
+                  marginY: "1.1rem",
+                  fontSize: "1rem",
+                  color: toggleHook ? "white" : "black",
+                  width: "20vw",
+                }}
+                onClick={logOut}
+              >
+                Log out
+              </Button>
+              <Toggle tog={settoggleHook} sx={{ position: "relative" }} />
+            </List>
+          </Box>
+        )}
         <Box
           sx={{
             display: "flex",
@@ -214,7 +224,7 @@ function Home() {
           <Typography
             sx={{
               fontWeight: "bold",
-              fontSize: {md:"1.2rem",xs:"1rem"},
+              fontSize: { md: "1.2rem", xs: "1rem" },
               color: toggleHook ? "black" : "white",
             }}
           >
@@ -222,7 +232,7 @@ function Home() {
           </Typography>
           <Box
             sx={{
-              display: {md:"flex",xs:"none"},
+              display: { md: "flex", xs: "none" },
               flexDirection: "row",
               alignItems: "center",
               gap: "0.125rem",
@@ -235,17 +245,18 @@ function Home() {
                 fontWeight: "bold",
                 fontSize: "1rem",
                 color: toggleHook ? "black" : "white",
-                wdith:"10vw"
+                wdith: "10vw",
               }}
               onClick={logOut}
             >
               Log out
             </Button>
           </Box>
-          <Box 
-          sx={{display:{md:"none",xs:"flex"}}}
-          >
-              <MenuIcon  sx={{color: toggleHook ? "black" : "white"}} onClick={openDrawerHandler} />
+          <Box sx={{ display: { md: "none", xs: "flex" } }}>
+            <MenuIcon
+              sx={{ color: toggleHook ? "black" : "white" }}
+              onClick={openDrawerHandler}
+            />
           </Box>
         </Box>
         <Box
@@ -262,7 +273,7 @@ function Home() {
             sx={{
               textAlign: "center",
               fontWeight: "bold",
-              fontSize: {md:"2rem", xs:"1.3rem"},
+              fontSize: { md: "2rem", xs: "1.3rem" },
               color: toggleHook ? "black" : "white",
             }}
           >
@@ -278,7 +289,7 @@ function Home() {
             maxRows={4}
             sx={{
               marginY: "1rem",
-              width: {md:"50%",xs:"100%"},
+              width: { md: "50%", xs: "100%" },
               "& .MuiOutlinedInput-root": {
                 height: "8rem",
                 display: "flex",
@@ -321,7 +332,7 @@ function Home() {
           <Typography
             sx={{
               textAlign: "center",
-              fontSize: {md:"2rem",xs:"1.3rem"},
+              fontSize: { md: "2rem", xs: "1.3rem" },
               fontWeight: "bold",
               color: toggleHook ? "black" : "white",
             }}
@@ -346,7 +357,7 @@ function Home() {
             sx={{
               textAlign: "center",
               marginBottom: "1.5rem",
-              fontSize: {md:"2rem",xs:"1.3rem"},
+              fontSize: { md: "2rem", xs: "1.3rem" },
               fontWeight: "bold",
               color: toggleHook ? "black" : "white",
             }}
@@ -358,7 +369,7 @@ function Home() {
           <Typography
             sx={{
               textAlign: "center",
-              fontSize: {md:"1.2rem",xs:"1rem"},
+              fontSize: { md: "1.2rem", xs: "1rem" },
               fontWeight: "bold",
               color: toggleHook ? "black" : "white",
             }}
@@ -379,8 +390,7 @@ function Home() {
               variant="contained"
               color="success"
               onClick={() => {
-                // feedback("Real")
-                setOpen(true);
+                feedback("Real")
               }}
             >
               Real
@@ -389,14 +399,13 @@ function Home() {
               variant="contained"
               color="error"
               onClick={() => {
-                setOpen(true);
+                feedback("Fake")
               }}
             >
               Fake
             </Button>
           </Box>
         </Box>
-     
       </Stack>
     </>
   );
